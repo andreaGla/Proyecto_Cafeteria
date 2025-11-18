@@ -1,6 +1,14 @@
 <?php
-// ¡MUY IMPORTANTE! Esto DEBE ir al inicio de todo, antes de cualquier HTML.
 session_start();
+
+// --- AÑADIDO: INICIO DEL BLOQUE DE SEGURIDAD ---
+// Si no existe la variable de sesión 'user_id', significa que no ha iniciado sesión.
+if (!isset($_SESSION['user_id'])) {
+    // Lo mandamos de vuelta a la página de login.
+    header('Location: login.php');
+    exit; // Detenemos la carga del resto de la página
+}
+// --- FIN DEL BLOQUE DE SEGURIDAD ---
 
 
 if (!isset($_SESSION['carrito'])) {
@@ -21,6 +29,8 @@ foreach ($_SESSION['carrito'] as $producto) {
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+    <a href="logout.php" class="btn-logout">Cerrar Sesión (<?php echo htmlspecialchars($_SESSION['username']); ?>)</a>
 
     <div class="container">
 
@@ -45,19 +55,15 @@ foreach ($_SESSION['carrito'] as $producto) {
         <div class="menu-container">
             <?php
             try {
-                // 1. Conectarse a la base de datos (revisa que la ruta sea correcta)
+                // (Tu código de base de datos existente)
                 $db = new PDO('sqlite:db/cafeteria.db');
-                
-                // 2. Obtener productos
                 $query = $db->query('SELECT * FROM menu');
 
                 while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
-                    
                     $nombre = htmlspecialchars($row['nombre']);
                     $precio = htmlspecialchars($row['precio']);
                     $id = htmlspecialchars($row['id']);
                     
-                    // HTML para cada producto
                     echo <<<HTML
                     <div class="producto-card">
                         <img src="imagenes/latte.jpg" alt="Imagen de $nombre">
@@ -73,11 +79,8 @@ foreach ($_SESSION['carrito'] as $producto) {
                     </div>
 HTML;
                 }
-
             } catch (PDOException $e) {
-                // Mostrar un error si no se puede conectar
                 echo "Error: No se puede conectar a la base de datos. Revisa los permisos.";
-                // echo "Error: " . $e->getMessage(); // (Descomentar para ver el error exacto)
             }
             ?>
         </div>
